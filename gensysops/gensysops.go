@@ -1,7 +1,7 @@
 /*
 Package gensysops provides generic functions which you can expose to the otto
-JavaScript runtime to perform common system operations. Examples include file
-modification and even arbitrary system commands.
+JavaScript runtime to perform common system operations. Examples include
+filesystem interaction and even arbitrary system commands.
 
 	import (
 		"github.com/robertkrimen/otto"
@@ -15,11 +15,13 @@ to a keyword.
 
 	ottoVM := otto.New()
 	ottoVM.Set("goFileExists", gensysops.FileExists)
-	ottoVM.Run(`
+	if _, err := ottoVM.Run(`
 		var myFile = "./test1.txt";
 		var myFileExists = goFileExists(myFile);
 		console.log(myFile, "exists:", myFileExists);
-	`)
+	`); err != nil {
+		panic(err)
+	}
 
 For explicit usage examples, refer to
 https://github.com/sethll/goCode/gensysops/test.go
@@ -36,19 +38,8 @@ import (
 	"time"
 )
 
-// handlErr is a shitty way to deal with errors.
-func handlErr(err error) {
-	if err != nil {
-		log.Print(err)
-	}
-}
-
-func stringToFileMode(inString string) os.FileMode {
-	permUint, err := strconv.ParseUint(inString, 8, 64)
-	handlErr(err)
-	return os.FileMode(permUint)
-}
-
+// ReadFileToArray will attempt to open given fileName and return a string
+// array where each element is a line.
 func ReadFileToArray(fileName string) []string {
 	var retSlice []string
 
@@ -67,6 +58,10 @@ func ReadFileToArray(fileName string) []string {
 	return retSlice
 }
 
+// WriteBytesToFile will attempt to write a byte array out to given fileName
+// with given file permissions.
+//
+// filePerm is a string such as "0755" or "0644".
 func WriteBytesToFile(fileName string, outputBytes []byte, filePerm string) int {
 	permFM := stringToFileMode(filePerm)
 	outFile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, permFM)
@@ -79,6 +74,11 @@ func WriteBytesToFile(fileName string, outputBytes []byte, filePerm string) int 
 	return writtenBytes
 }
 
+// WriteStringsToFile will attempt to write a string array out to given
+// fileName with given file permissions. The elements of the string array are
+// joined with a newline character.
+//
+// filePerm is a string such as "0755" or "0644".
 func WriteStringsToFile(fileName string, outputStrings []string, filePerm string) int {
 	permFM := stringToFileMode(filePerm)
 	outFile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, permFM)
@@ -92,6 +92,12 @@ func WriteStringsToFile(fileName string, outputStrings []string, filePerm string
 	return writtenBytes
 }
 
+// SetFileTimestamps will attempt to set the given accessTime and modTime for
+// a file.
+//
+// accessTime and modTime must follow the RFC3339 specification, e.g.:
+//
+//     aTimeString := "2018-06-28T13:30:30-07:00" \\ for Thu Jun 28, 1:30:30 pm PDT
 func SetFileTimestamps(fileName string, accessTime string, modTime string) {
 	aTime, err := time.Parse(time.RFC3339, accessTime)
 	handlErr(err)
@@ -102,6 +108,7 @@ func SetFileTimestamps(fileName string, accessTime string, modTime string) {
 	handlErr(err)
 }
 
+// FileExists accepts a fileName string and returns a Boolean value.
 func FileExists(fileName string) bool {
 	if _, err := os.Stat(fileName); err == nil {
 		return true
@@ -110,6 +117,13 @@ func FileExists(fileName string) bool {
 	return false
 }
 
+// ExecSystemCmd allows the user to execute arbitrary system commands through
+// the target system's shell. Available systems:
+//
+// * "unix" (uses 'bash -c' to execute)
+// * "windows" (uses 'cmd /C' to execute)
+//
+// Arguments/Parameters are provided as a string array.
 func ExecSystemCmd(operatingSystem string, arguments []string) string {
 	var systemShell string
 	var firstArg []string
@@ -132,4 +146,18 @@ func ExecSystemCmd(operatingSystem string, arguments []string) string {
 	handlErr(err)
 
 	return string(combinedOut[:])
+}
+
+// handlErr is a really shitty way to deal with errors.
+func handlErr(err error) {
+	if err != nil {
+		log.Print(err)
+	}
+}
+
+// stringToFileMode parses a string and returns an os.FileMode object.
+func stringToFileMode(inString string) os.FileMode {
+	permUint, err := strconv.ParseUint(inString, 8, 64)
+	handlErr(err)
+	return os.FileMode(permUint)
 }
