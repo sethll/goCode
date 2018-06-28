@@ -1,6 +1,6 @@
 # gensysops
 
-Pre-built generic functions for exposure to [otto JS VM](https://godoc.org/github.com/robertkrimen/otto).
+Pre-built generic functions for exposure to [otto JS interpreter](https://godoc.org/github.com/robertkrimen/otto).
 
 ## Explanation
 

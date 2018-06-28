@@ -1,4 +1,30 @@
-package genfilops
+/*
+Package gensysops provides generic functions which you can expose to the otto
+JavaScript runtime to perform common system operations. Examples include file
+modification and even arbitrary system commands.
+
+	import (
+		"github.com/robertkrimen/otto"
+		"github.com/sethll/goCode/gensysops"
+	)
+
+Use
+
+To use a "gensysops" function, create an otto VM and Set the desired function
+to a keyword.
+
+	ottoVM := otto.New()
+	ottoVM.Set("goFileExists", gensysops.FileExists)
+	ottoVM.Run(`
+		var myFile = "./test1.txt";
+		var myFileExists = goFileExists(myFile);
+		console.log(myFile, "exists:", myFileExists);
+	`)
+
+For explicit usage examples, refer to
+https://github.com/sethll/goCode/gensysops/test.go
+*/
+package gensysops
 
 import (
 	"bufio"
