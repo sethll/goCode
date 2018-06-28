@@ -119,9 +119,8 @@ func FileExists(fileName string) bool {
 
 // ExecSystemCmd allows the user to execute arbitrary system commands through
 // the target system's shell. Available systems:
-//
-// * "unix" (uses 'bash -c' to execute)
-// * "windows" (uses 'cmd /C' to execute)
+// 		"unix" (uses 'bash -c' to execute)
+// 		"windows" (uses 'cmd /C' to execute)
 //
 // Arguments/Parameters are provided as a string array.
 func ExecSystemCmd(operatingSystem string, arguments []string) string {
