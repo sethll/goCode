@@ -1,4 +1,4 @@
-package main
+//package main
 
 import (
 	"github.com/robertkrimen/otto"
@@ -6,5 +6,8 @@ import (
 )
 
 func main() {
+	ottoVM := otto.New()
+
+    ottoVM.Set("go")
 
 }
